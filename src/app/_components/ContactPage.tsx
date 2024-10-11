@@ -1,12 +1,14 @@
 "use client";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, Spin } from "antd";
+import { useState } from "react";
+
 // Interface for the contact form data
 interface ContactFormData {
-  name: string;       // Full name of the user
-  phone: string;      // User's phone number
-  email: string;      // User's email address
-  subject?: string;   // Optional subject for the message
-  message: string;    // Message or inquiry from the user
+  name: string; // Full name of the user
+  phone: string; // User's phone number
+  email: string; // User's email address
+  subject?: string; // Optional subject for the message
+  message: string; // Message or inquiry from the user
 }
 
 // Office address data
@@ -29,16 +31,22 @@ const offices = [
     mapSrc:
       "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d617.147028356543!2d106.6698374780107!3d10.83885086186099!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x5f95a17f89b5dd4d!2zTFXhuqxUIEjDmU5HIELDgUNIIC0gQ0hJIE5Iw4FOSCBI4buSIENIw40gTUlOSA!5e0!3m2!1svi!2s!4v1620976427364!5m2!1svi!2s",
   },
-  
 ];
 
 const ContactForm = () => {
   const [form] = Form.useForm();
+  const [loadingState, setLoadingState] = useState<boolean[]>(Array(offices.length).fill(true)); // Trạng thái loading cho từng iframe
 
   // Handle form submission
   const onFinish = (values: ContactFormData) => {
     console.log("Form Data:", values);
     // Handle form submission, e.g., API call
+  };
+
+  const handleIframeLoad = (index: number) => {
+    const updatedLoadingState = [...loadingState];
+    updatedLoadingState[index] = false;
+    setLoadingState(updatedLoadingState);
   };
 
   return (
@@ -47,7 +55,10 @@ const ContactForm = () => {
         {/* Office addresses */}
         <div className="w-full lg:w-1/2 space-y-8">
           {offices.map((office, index) => (
-            <div key={index} className="grid md:grid-cols-2 grid-cols-1 justify-between  rounded ">
+            <div
+              key={index}
+              className="grid md:grid-cols-2 grid-cols-1 justify-between rounded"
+            >
               <div>
                 <h3 className="font-bold text-lg mb-2">{`Chi nhánh ${office.city}`}</h3>
                 <p className="leading-5">
@@ -63,20 +74,30 @@ const ContactForm = () => {
                   <b>Website:</b> {office.website}
                 </p>
               </div>
-              <iframe
-                src={office.mapSrc}
-                width="100%"
-                height="200"
-                style={{ border: 0 }}
-                allowFullScreen={true}
-                loading="lazy"
-              ></iframe>
+
+              {/* Hiển thị Spin khi iframe chưa tải xong */}
+              <div className="relative">
+                {loadingState[index] && (
+                  <div className="absolute inset-0 flex justify-center items-center">
+                    <Spin size="large" />
+                  </div>
+                )}
+                <iframe
+                  src={office.mapSrc}
+                  width="100%"
+                  height="200"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                  onLoad={() => handleIframeLoad(index)} // Xử lý khi iframe tải xong
+                ></iframe>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Contact form */}
-        <div className="w-full lg:w-[45%]  p-6 ">
+        <div className="w-full lg:w-[45%] p-6">
           <h3 className="text-xl font-bold mb-6">Liên hệ với chúng tôi</h3>
           <Form
             form={form}

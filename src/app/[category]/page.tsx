@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import Sidebar from "../_components/Sidebar";
 import Breadcrumb from "../_components/Navbar";
 import ContactPage from "../_components/ContactPage";
+import { Spin } from "antd"; // Import Spin từ Ant Design
 
 // Định nghĩa kiểu dữ liệu cho Post và Menu
 interface PostItem {
@@ -148,6 +149,8 @@ const CategoryPage = () => {
   const params = useParams();
   const category = params?.category;
   const [currentCategory, setCurrentCategory] = useState<MenuItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Thêm isLoading cho quá trình tải danh mục
+  const [imageLoading, setImageLoading] = useState(true); // Thêm imageLoading cho quá trình tải ảnh
 
   useEffect(() => {
     if (category) {
@@ -155,11 +158,22 @@ const CategoryPage = () => {
         (item) => item.href === `/${category}`
       );
       setCurrentCategory(foundCategory || null);
+      setIsLoading(false); // Sau khi danh mục được tải xong
     }
   }, [category]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1220px] mx-auto font-bold text-2xl h-[200px] text-red-500 flex items-center justify-center">
+        <Spin />
+      </div>
+    );
+  }
+
   if (category === "lien-he") {
     return <ContactPage />;
   }
+
   if (!currentCategory) {
     return (
       <div className="max-w-[1220px] mx-auto font-bold text-2xl h-[200px] text-red-500 flex items-center justify-center">
@@ -188,9 +202,20 @@ const CategoryPage = () => {
                   className="flex flex-col border md:flex-row items-center md:space-x-4"
                   style={{ display: "table", width: "100%" }}
                 >
+                  {/* Hiển thị Spin loader khi ảnh đang tải */}
+                  {imageLoading && (
+                    <div className="flex justify-center items-center h-40 w-2/6 relative">
+                      <Spin size="large" />
+                    </div>
+                  )}
+
+                  {/* Hiển thị ảnh sau khi đã tải xong */}
                   <div
                     className="w-2/6 relative h-40"
-                    style={{ display: "table-cell", verticalAlign: "middle" }}
+                    style={{
+                      display: imageLoading ? "none" : "table-cell",
+                      verticalAlign: "middle",
+                    }}
                   >
                     <Image
                       src={post.image}
@@ -199,6 +224,7 @@ const CategoryPage = () => {
                       priority
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="rounded-md object-cover"
+                      onLoadingComplete={() => setImageLoading(false)} // Ẩn loader khi ảnh tải xong
                     />
                   </div>
 

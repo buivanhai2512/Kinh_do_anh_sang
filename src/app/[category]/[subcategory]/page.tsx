@@ -18,7 +18,6 @@ interface PostItem {
 
 // Dữ liệu giả lập cho các bài viết
 const posts: PostItem[] = [
-  // Bài viết cho phần "Giới thiệu"
   {
     href: "/gioi-thieu/gioi-thieu-chung",
     title: "Giới thiệu chung",
@@ -47,8 +46,6 @@ const posts: PostItem[] = [
     image:
       "https://luathungbach.vn/wp-content/uploads/2023/08/luat-hung-bach-tuyen-dung.jpg",
   },
-
-  // Bài viết cho phần "Dịch vụ"
   {
     href: "/dich-vu/luat-su-tu-van",
     title: "Luật sư tư vấn",
@@ -77,8 +74,6 @@ const posts: PostItem[] = [
     image:
       "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
   },
-
-  // Bài viết cho phần "Tin tức"
   {
     href: "/tin-tuc/hinh-su",
     title: "Sự kiện mới",
@@ -103,6 +98,7 @@ const SubcategoryPage = () => {
 
   const [currentPost, setCurrentPost] = useState<PostItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(true); // Trạng thái cho việc tải ảnh
 
   // Tìm post dựa trên URL động
   useEffect(() => {
@@ -135,22 +131,33 @@ const SubcategoryPage = () => {
       <Breadcrumbs />
       <div className="max-w-[1220px] mx-auto py-8 px-8">
         <div className="flex flex-wrap -mx-4">
-        <div className="w-1/4 px-4 Sidebar">
-          <Sidebar />
+          <div className="w-1/4 px-4 Sidebar">
+            <Sidebar />
           </div>
           <div className=" max-[900px]:w-full  w-3/4 px-4">
             <h1 className="text-3xl text-[#930] font-bold mb-6">
               {currentPost.title}
             </h1>
 
-            {/* Hiển thị thông tin dựa trên post được chọn */}
-            <div className="relative w-full h-80 mb-6">
+            {/* Hiển thị Spin loader khi ảnh đang tải */}
+            {imageLoading && (
+              <div className="flex justify-center items-center h-80 mb-6">
+                <Spin size="large" />
+              </div>
+            )}
+
+            {/* Hiển thị ảnh sau khi đã tải xong */}
+            <div
+              className="relative w-full h-80 mb-6"
+              style={{ display: imageLoading ? "none" : "block" }}
+            >
               <Image
                 src={currentPost.image}
                 alt={currentPost.title}
                 fill
                 priority
                 className="object-cover"
+                onLoadingComplete={() => setImageLoading(false)} // Ẩn loader khi ảnh tải xong
               />
             </div>
             <p className="mb-8">{currentPost.description}</p>
