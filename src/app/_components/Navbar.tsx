@@ -83,11 +83,11 @@ const Breadcrumbs = () => {
   });
 
   return (
-    <div className="h-[100px] bg-[black] text-white">
-      <ul className=" space-x-2 max-w-[1220px] mx-auto px-8 flex  h-[100px] items-center">
+    <div className="h-[100px] bg-[#2c2a2a]  text-white">
+      <ul className=" space-x-2 max-w-[1220px] mx-auto px-8 flex h-[100px] items-center">
         {breadcrumbs.map((breadcrumb, index) => (
           <li key={index} className="flex items-center ">
-            <Link href={breadcrumb.href} className="font-bold line-clamp-1 min-[394px]:text-[16px] lg:text-2xl">
+            <Link href={breadcrumb.href} className="font-bold line-clamp-1 min-[394px]:text-[16px] lg:text-[22px]">
               {breadcrumb.label}
             </Link>
             {index < breadcrumbs.length - 1 && (

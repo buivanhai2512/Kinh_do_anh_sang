@@ -10,25 +10,28 @@ interface MenuItemProps {
 
 const MenuItem: React.FC<MenuItemProps> = ({ href, label, dropdownItems }) => {
   const pathname = usePathname() || "";
-  
-  // Xử lý trang chủ riêng biệt
-  const isHome = href === '/' && pathname === '/';
 
-  // Xử lý danh mục cha chỉ active khi ở chính trang của nó
-  const isActiveParent = pathname === href;
+  // Kiểm tra trạng thái active của menu chính
+  const isActiveParent = pathname === href; // Kiểm tra chính xác với pathname
 
   // Kiểm tra nếu bất kỳ mục con nào đang được chọn
-  const isActiveChild = dropdownItems?.some(item => pathname === item.href);
+  const isActiveChild = dropdownItems?.some((item) => pathname === item.href);
 
-  // Đảm bảo chỉ kiểm tra trạng thái khi nằm trong cùng danh mục cha
-  const isChildPathActive = dropdownItems?.some(item => pathname.startsWith(item.href) && href === "/services");
+  // Đảm bảo rằng nếu mục con hoặc cha được chọn thì đều có màu nền thay đổi
+  const isActive = isActiveParent || isActiveChild;
 
   return (
-    <li className={`relative group ${isHome || isActiveParent || isActiveChild || isChildPathActive ? "bg-[#333] text-white" : ""}`}>
+    <li
+      className={`relative group ${
+        isActive ? "bg-[#333] text-white" : ""
+      } transition-all`}
+    >
       {/* Link chính */}
       <Link
         href={href}
-        className={`flex uppercase whitespace-nowrap max-[900px]:py-[1px] overflow-x-auto max-w-[600px] tracking-[0.5px] items-center leading-[40px] transition-color text-[14px] p-[0_13px] font-bold ${isHome || isActiveParent || isActiveChild || isChildPathActive ? "text-white" : "text-black"} hover:bg-[#333] hover:text-white`}
+        className={`flex uppercase whitespace-nowrap max-[900px]:py-[1px] overflow-x-auto max-w-[600px] tracking-[0.5px] items-center leading-[40px] transition-color text-[14px] p-[0_13px] font-bold ${
+          isActive ? "text-white" : "text-black"
+        } hover:bg-[#333] hover:text-white`}
       >
         {label}
         {dropdownItems && (
@@ -45,7 +48,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ href, label, dropdownItems }) => {
             <li key={index}>
               <Link
                 href={item.href}
-                className={`block p-3 ${pathname === item.href ? "bg-[#333] text-white" : "text-black"} hover:bg-[#333] hover:text-white`}
+                className={`block p-3 ${
+                  pathname === item.href ? "bg-[#333] text-white" : "text-black"
+                } hover:bg-[#333] hover:text-white`}
               >
                 {item.label}
               </Link>

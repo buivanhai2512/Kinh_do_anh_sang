@@ -42,7 +42,7 @@ const menuItems = [
     ],
   },
   {
-    href: "/lien-he ",
+    href: "/lien-he",
     label: "Liên hệ",
   },
 ];

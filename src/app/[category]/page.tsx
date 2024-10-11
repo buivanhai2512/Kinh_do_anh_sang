@@ -159,6 +159,7 @@ const CategoryPage = () => {
       );
       setCurrentCategory(foundCategory || null);
       setIsLoading(false); // Sau khi danh mục được tải xong
+      
     }
   }, [category]);
 
