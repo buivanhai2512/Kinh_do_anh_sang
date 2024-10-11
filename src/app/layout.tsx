@@ -23,11 +23,6 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap"
-          rel="stylesheet"
-          crossOrigin=""
-        />
         <link rel="preload" as="image" href="/banner_2.webp" />
         <link
           rel="stylesheet"
@@ -42,7 +37,7 @@ export default function RootLayout({
       <body>
         <Header />
         {children}
-        <ContactButtons/>
+        <ContactButtons />
         <Footer />
       </body>
     </html>
