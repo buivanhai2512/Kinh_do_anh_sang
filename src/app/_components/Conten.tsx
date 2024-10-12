@@ -61,7 +61,7 @@ const menuItems = [
 // Component Content để hiển thị dịch vụ và bài viết
 export default function Content() {
   return (
-    <div className="max-w-[1220px] mx-auto py-8 px-5 ">
+    <div className="max-w-[1220px] mx-auto pb-8">
       {/* Grid chứa các mục dịch vụ và bài viết */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {menuItems.map((service, serviceIndex) => (

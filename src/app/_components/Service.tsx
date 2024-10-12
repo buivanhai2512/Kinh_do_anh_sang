@@ -36,7 +36,7 @@ export default function Service() {
       <h2 className="uppercase text-[1.6em] text-center font-bold">
         DỊCH VỤ CỦA CHÚNG TÔI
       </h2>
-      <div className="grid grid-cols-2 px-4 min-[1220px]:p-0 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 min-[1220px]:p-0 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {services.map((service, index) => (
           <section key={index} className="p-4">
             <Link href={``}>
