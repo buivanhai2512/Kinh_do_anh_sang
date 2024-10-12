@@ -93,7 +93,7 @@ export default function Content() {
                       />
                     </Link>
                   </div>
-                  <div>
+                  <div className="pr-[5px]">
                     <h3 className="text-[14px] min-[608px]:text-lg line-clamp-1 uppercase font-bold my-1">
                       {post.title}
                     </h3>
