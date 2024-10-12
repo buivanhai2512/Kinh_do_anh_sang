@@ -33,12 +33,21 @@ const menuItems = [
       { href: "/dich-vu/dich-vu-khac", label: "Dịch vụ khác" },
     ],
   },
+  
+  {
+    href: "/linh-vuc",
+    label: "Lĩnh vực",
+    dropdownItems: [
+      { href: "/linh-vuc/luat-hinh-su", label: "Luật hình sự" },
+      { href: "/linh-vuc/luat-dan-su", label: "Luật dân sự" },
+    ],
+  },
   {
     href: "/tin-tuc",
     label: "Tin tức",
     dropdownItems: [
-      { href: "/tin-tuc/hinh-su", label: "Hình sự" },
-      { href: "/tin-tuc/dan-su", label: "Dân sự" },
+      { href: "/tin-tuc/luat-hinh-su", label: "Luật hình sự" },
+      { href: "/tin-tuc/luat-dan-su", label: "Luật dân sự" },
     ],
   },
   {

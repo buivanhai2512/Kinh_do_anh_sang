@@ -1,6 +1,7 @@
 "use client";
 import { Form, Input, Button, Spin } from "antd";
 import { useState } from "react";
+import Breadcrumbs from "./Navbar";
 
 // Interface for the contact form data
 interface ContactFormData {
@@ -50,14 +51,16 @@ const ContactForm = () => {
   };
 
   return (
+    <>
+      <Breadcrumbs/>
     <div className="max-w-[1200px] mx-auto py-8 px-8">
-      <div className="flex flex-wrap justify-between">
+      <div className="flex flex-wrap gap-10 justify-between">
         {/* Office addresses */}
-        <div className="w-full lg:w-1/2 space-y-8">
+        <div className="w-full lg:w-1/2 flex-1 gap-6 space-y-14">
           {offices.map((office, index) => (
             <div
               key={index}
-              className="grid md:grid-cols-2 gap-6 grid-cols-1 justify-between rounded"
+              className="grid md:grid-cols-[55%_45%] gap-6 grid-cols-1 justify-between rounded"
             >
               <div>
                 <h3 className="font-bold text-lg mb-2">{`Chi nhánh ${office.city}`}</h3>
@@ -97,7 +100,7 @@ const ContactForm = () => {
         </div>
 
         {/* Contact form */}
-        <div className="w-full lg:w-[45%] p-6">
+        <div className="w-full lg:w-[40%] px-6">
           <h3 className="text-xl font-bold mb-6">Liên hệ với chúng tôi</h3>
           <Form
             form={form}
@@ -141,7 +144,7 @@ const ContactForm = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
+              <Button type="primary" className="px-16 font-bold text-lg" htmlType="submit" block>
                 Gửi đi
               </Button>
             </Form.Item>
@@ -149,6 +152,7 @@ const ContactForm = () => {
         </div>
       </div>
     </div>
+      </>
   );
 };
 

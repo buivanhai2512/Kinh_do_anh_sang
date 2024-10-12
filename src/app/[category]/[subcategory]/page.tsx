@@ -75,18 +75,34 @@ const posts: PostItem[] = [
       "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
   },
   {
-    href: "/tin-tuc/hinh-su",
+    href: "/linh-vuc/luat-hinh-su",
     title: "Sự kiện mới",
     description: "Cập nhật các sự kiện pháp lý nổi bật.",
     image:
       "https://luathungbach.vn/wp-content/uploads/2023/04/Dich-vu-ly-hon-3.jpg",
   },
   {
-    href: "/tin-tuc/dan-su",
+    href: "/linh-vuc/luat-dan-su",
     title: "Hoạt động công ty",
     description: "Các hoạt động nội bộ nổi bật của công ty.",
     image:
       "https://luathungbach.vn/wp-content/uploads/2023/04/Dich-vu-ly-hon-3.jpg",
+  },
+  {
+    href: "/tin-tuc/luat-hinh-su",
+    title: "THỦ TỤC KHÁNG CÁO BẢN ÁN SƠ THẨM",
+    description:
+      "Bạn không đồng ý với phán quyết của Tòa án sơ thẩm? Hãy tìm hiểu về thủ tục kháng cáo.",
+    image:
+      "https://luathungbach.vn/wp-content/uploads/2022/11/Lap-vi-bang-ghi-nhan-hoat-dong-kinh-doanh.jpg",
+  },
+  {
+    href: "/tin-tuc/luat-dan-su",
+    title: "LUẬT SƯ ĐẠI DIỆN CHO KHÁCH HÀNG",
+    description:
+      "Luật sư đại diện bảo vệ quyền lợi cho khách hàng trong các vụ kiện.",
+    image:
+      "https://luathungbach.vn/wp-content/uploads/2022/11/Lap-vi-bang-ghi-nhan-hoat-dong-kinh-doanh.jpg",
   },
 ];
 
