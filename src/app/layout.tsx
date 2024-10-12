@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Kinh Đô Ánh Sáng",
   description: "dùng cho seo",
   icons: {
-    icon: "/kihn đô.png",
+    icon: "/logo.png",
   },
 };
 

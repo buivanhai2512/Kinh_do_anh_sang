@@ -57,7 +57,7 @@ const ContactForm = () => {
           {offices.map((office, index) => (
             <div
               key={index}
-              className="grid md:grid-cols-2 grid-cols-1 justify-between rounded"
+              className="grid md:grid-cols-2 gap-6 grid-cols-1 justify-between rounded"
             >
               <div>
                 <h3 className="font-bold text-lg mb-2">{`Chi nhánh ${office.city}`}</h3>

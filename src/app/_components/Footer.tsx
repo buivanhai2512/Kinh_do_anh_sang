@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-black text-white py-6">
       <div className="max-w-[1220px] mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between">
-          <div className="mb-6 md:mb-0 leading-8">
+          <div className="mb-6 md:mb-0 leading-8 cursor-pointer">
             <h3 className="text-lg font-semibold mb-4">Liên hệ với chúng tôi</h3>
             <p>Địa chỉ: 123 Đường Luật, Thành phố Luật, Việt Nam</p>
             <p>Điện thoại: <a href="tel:0912601896" className="text-white">0912.601.896</a></p>

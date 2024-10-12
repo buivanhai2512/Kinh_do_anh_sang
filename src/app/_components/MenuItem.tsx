@@ -35,7 +35,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ href, label, dropdownItems }) => {
       >
         {label}
         {dropdownItems && (
-          <span className="ml-1 text-[#777777] text-[10px] flex items-center">
+          <span className={`ml-1 ${
+            isActive ? "text-white" : "text-black"
+          }  text-[10px] flex transition-colors group-hover:text-white items-center`}>
             <DownOutlined />
           </span>
         )}
@@ -43,7 +45,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ href, label, dropdownItems }) => {
 
       {/* Dropdown items (nếu có) */}
       {dropdownItems && (
-        <ul className="absolute left-0 dropdown-menu group-hover:block bg-white shadow-lg p-4 space-y-2 z-[100]">
+        <ul className="absolute left-0 dropdown-menu group-hover:block line-clamp-1 bg-white shadow-lg p-4 space-y-2 z-[100]">
           {dropdownItems.map((item, index) => (
             <li key={index}>
               <Link

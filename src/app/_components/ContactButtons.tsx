@@ -15,7 +15,6 @@ const ContactButtons = () => {
                   alt="Chat Zalo"
                   width={40}
                   height={40}
-                  className="rounded-full"
                 />
               </a>
             </div>
@@ -41,7 +40,7 @@ const ContactButtons = () => {
         {/* Số điện thoại */}
         <div className="phone-bar phone-bar-n">
           <a href="tel:0912601896">
-            <span className="text-phone">0912601896</span>
+            <span className="text-phone">0912.601.896</span>
           </a>
         </div>
       </div>

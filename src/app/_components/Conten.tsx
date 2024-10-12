@@ -61,11 +61,11 @@ const menuItems = [
 // Component Content để hiển thị dịch vụ và bài viết
 export default function Content() {
   return (
-    <div className="max-w-[1220px] mx-auto py-8 px-6 lg:px-0">
+    <div className="max-w-[1220px] mx-auto py-8 px-5 ">
       {/* Grid chứa các mục dịch vụ và bài viết */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {menuItems.map((service, serviceIndex) => (
-          <div key={serviceIndex} className="service-column">
+          <div key={serviceIndex} className="service-column px-4">
             {/* Tiêu đề dịch vụ */}
             <h2 className="text-xl font-bold mb-4 text-black">
               {service.label}
@@ -78,7 +78,7 @@ export default function Content() {
                   className="border-b gap-3 grid grid-cols-[28%_72%] items-center border-gray-300 pb-4"
                 >
                   {/* Hình ảnh của bài viết */}
-                  <div className="relative w-full min-h-[100px]">
+                  <div className="relative w-full min-h-[100px] group overflow-hidden">
                     <Link href={post.href} >
                       <Image
                         src={post.image}
@@ -86,7 +86,7 @@ export default function Content() {
                         fill // Thay thế layout="fill"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tối ưu kích thước hình ảnh
                         style={{ objectFit: "cover" }} // Thay thế objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
                         loading="lazy" // Lazy loading cho hình ảnh
                         placeholder="blur" // Sử dụng mã hóa hình ảnh mờ
                         blurDataURL={post.image} // URL mã hóa cho hình ảnh mờ
@@ -94,10 +94,10 @@ export default function Content() {
                     </Link>
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium line-clamp-1">
+                    <h3 className="text-[14px] min-[608px]:text-lg line-clamp-1 uppercase font-bold my-1">
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 line-clamp-2">
+                    <p className="text-gray-600 text-[70%] min-[533px]:text-[95%] min-[533px]:text-justify leading-5 line-clamp-3">
                       {post.description}
                     </p>
                   </div>

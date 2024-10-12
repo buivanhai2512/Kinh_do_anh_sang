@@ -40,7 +40,7 @@ export default function Service() {
         {services.map((service, index) => (
           <section key={index} className="p-4">
             <Link href={``}>
-              <div className="relative w-full h-[120px] min-[533px]:h-48">
+              <div className="relative w-full h-[120px] min-[533px]:h-48 group overflow-hidden">
                 <Image
                   src={service.imageUrl}
                   alt={`Dịch vụ ${service.title}`}
@@ -50,7 +50,7 @@ export default function Service() {
                   blurDataURL={service.imageUrl} // Bạn có thể tạo một hình ảnh nhỏ riêng hoặc sử dụng hình ảnh hiện tại
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tối ưu hóa kích thước ảnh cho các thiết bị khác nhau
                   style={{ objectFit: "cover" }} // Thay thế objectFit="cover"
-                  className="rounded-md"
+                className="rounded-md transition-transform duration-300 ease-in-out group-hover:scale-110"
                 />
               </div>
               <div className="py-2">

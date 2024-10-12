@@ -189,7 +189,6 @@ div#whatsapp-vr .phone-vr .phone-vr-img-circle img {
 
 .phone-bar a:hover {
   opacity: 0.8;
-  color: #fff;
 }
 
 /* ẩn thanh scoll */
@@ -308,6 +307,6 @@ input:hover {
   color: white !important;
 }
 .dropdown-menu {
-  min-width: 260px;
+  min-width: 285px;
   display: none;
 }
