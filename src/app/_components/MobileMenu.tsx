@@ -1,78 +1,53 @@
 import React, { useState } from "react";
-import { Menu, AutoComplete, Input, Empty } from "antd";
+import { Menu, AutoComplete, Input, Empty, Spin, message } from "antd";
 import { MenuProps } from "antd";
 import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import { useAllCategoriesClient } from "../_hook/useApi"; // Sử dụng hook của bạn
 
 // Định nghĩa kiểu dữ liệu cho menu items
-interface DropdownItem {
-  href: string;
-  label: string;
+interface MenuItemProps {
+  id: number;
+  name: string;
+  slug: string;
+  title?: string;
+  desc?: string;
+  statusId?: number;
+  children?: MenuItemProps[];
 }
 
-interface MenuItem {
-  href: string;
-  label: string;
-  dropdownItems?: DropdownItem[];
-}
-
-// Dữ liệu menu với kiểu đã định nghĩa
-const menuItems = [
-  { href: "/", label: "Trang chủ" },
-  {
-    href: "/gioi-thieu",
-    label: "Giới thiệu",
-    dropdownItems: [
-      { href: "/gioi-thieu/gioi-thieu-chung", label: "Giới thiệu chung" },
-      { href: "/gioi-thieu/dich-vu", label: "Dịch vụ luật sư" },
-      {
-        href: "/gioi-thieu/chinh-sach-bao-mat",
-        label: "Chính sách dịch vụ và bảo mật",
-      },
-      { href: "/gioi-thieu/list-luat-su", label: "Danh sách luật sư " },
-    ],
-  },
-  {
-    href: "/dich-vu",
-    label: "Dịch vụ",
-    dropdownItems: [
-      { href: "/dich-vu/luat-su-tu-van", label: "Luật sư tư vấn" },
-      { href: "/dich-vu/luat-su-dai-dien", label: " Luật sư đại diện" },
-      { href: "/dich-vu/luat-su-tranh-tung", label: "Luật sư tranh tụng" },
-      { href: "/dich-vu/dich-vu-khac", label: "Dịch vụ khác" },
-    ],
-  },
-  {
-    href: "/tin-tuc",
-    label: "Tin tức",
-    dropdownItems: [
-      { href: "/tin-tuc/hinh-su", label: "Hình sự" },
-      { href: "/tin-tuc/dan-su", label: "Dân sự" },
-    ],
-  },
-  {
-    href: "/lien-he ",
-    label: "Liên hệ",
-  },
-];
-
-// Chuyển đổi `menuItems` thành định dạng `MenuItem[]` cho Ant Design Menu
-const convertToAntdMenuItems = (items: MenuItem[]): MenuProps["items"] => {
+// Chuyển đổi dữ liệu API thành định dạng `MenuProps["items"]` cho Ant Design Menu
+const convertToAntdMenuItems = (items: MenuItemProps[]): MenuProps["items"] => {
   return items.map((item) => {
-    if (item.dropdownItems) {
+    if (item.children && item.children.length > 0) {
+      // Nếu có danh mục con, hiển thị danh mục con cùng với link cho danh mục cha
       return {
-        key: item.href,
-        label: item.label,
-        children: item.dropdownItems.map((subItem) => ({
-          key: subItem.href,
-          label: <Link className="line-clamp-1" href={subItem.href}>{subItem.label}</Link>,
+        key: item.slug,
+        label: (
+          <Link className="line-clamp-1" href={`/${item.slug}`}>
+            {item.name}
+          </Link>
+        ),
+        children: item.children.map((subItem) => ({
+          key: subItem.slug,
+          label: (
+            <Link className="line-clamp-1" href={`/${item.slug}/${subItem.slug}`}>
+              {subItem.name || subItem.title}
+            </Link>
+          ),
         })),
       };
+    } else {
+      // Nếu không có danh mục con, chỉ hiển thị link cho danh mục cha
+      return {
+        key: item.slug,
+        label: (
+          <Link className="line-clamp-1" href={`/${item.slug}`}>
+            {item.name}
+          </Link>
+        ),
+      };
     }
-    return {
-      key: item.href,
-      label: <Link href={item.href}>{item.label}</Link>,
-    };
   });
 };
 
@@ -82,13 +57,14 @@ interface MobileMenuProps {
   setIsMenuOpen: (isOpen: boolean) => void;
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({
-  isMenuOpen,
-  setIsMenuOpen,
-}) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false); // Trạng thái cho phần tìm kiếm
   const [options, setOptions] = useState<{ value: string }[]>([]); // Trạng thái cho tìm kiếm tự động hoàn thành
 
+  // Sử dụng hook để lấy danh mục
+  const { data: menuItems = [], isLoading, isError } = useAllCategoriesClient();
+
+  // Chuyển đổi dữ liệu menu từ API sang định dạng phù hợp
   const mobileMenuItems: MenuProps["items"] = convertToAntdMenuItems(menuItems);
 
   // Xử lý tìm kiếm
@@ -106,6 +82,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   const handleMenuClick: MenuProps["onClick"] = () => {
     setIsMenuOpen(false); // Đóng menu khi người dùng chọn một mục
   };
+
+  if (isError) {
+    // Hiển thị thông báo lỗi
+    message.error("Không lấy được dữ liệu danh mục.");
+  }
 
   return (
     <>
@@ -130,14 +111,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         }}
       >
         {/* Close icon */}
-        <div className="flex justify-between p-4 items-center *:text-[white]">
+        <div className="flex justify-between p-4 items-center">
           <CloseOutlined
-            className="text-2xl cursor-pointer"
+            className="text-2xl text-white cursor-pointer"
             onClick={() => setIsMenuOpen(false)}
           />
           <SearchOutlined
             style={{ color: "white" }}
-            className="text-2xl  cursor-pointer"
+            className="text-2xl cursor-pointer"
             onClick={() => setIsSearchVisible(!isSearchVisible)}
           />
         </div>
@@ -160,15 +141,21 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           </div>
         )}
 
-        {/* Menu items */}
-        <Menu
-          onClick={handleMenuClick}
-          className="custom-menu *:text-[white]"
-          style={{ width: "100%" }}
-          defaultSelectedKeys={["1"]}
-          mode="inline"
-          items={mobileMenuItems} // Sử dụng dữ liệu đã chuyển đổi
-        />
+        {/* Hiển thị Spin nếu loading */}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-[100px]">
+            <Spin size="large" /> {/* Hiển thị Spin khi đang loading */}
+          </div>
+        ) : (
+          <Menu
+            onClick={handleMenuClick}
+            className="custom-menu text-white"
+            style={{ width: "100%" }}
+            defaultSelectedKeys={["1"]}
+            mode="inline"
+            items={mobileMenuItems} // Sử dụng dữ liệu đã chuyển đổi
+          />
+        )}
       </nav>
     </>
   );

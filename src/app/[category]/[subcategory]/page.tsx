@@ -1,128 +1,54 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Spin } from "antd"; // Import các thành phần từ antd
 import Image from "next/image";
 import CommentSection from "@/app/_components/CommentSection";
 import Breadcrumbs from "@/app/_components/Navbar";
 import Sidebar from "@/app/_components/Sidebar";
+import { useArticleDetails } from "@/app/_hook/useApi";
+import { useState, useEffect } from "react";
 
-// Định nghĩa kiểu PostItem cho các mục
-interface PostItem {
-  href: string;
-  title: string;
-  description: string;
-  image: string;
-}
 
-// Dữ liệu giả lập cho các bài viết
-const posts: PostItem[] = [
-  {
-    href: "/gioi-thieu/gioi-thieu-chung",
-    title: "Giới thiệu chung",
-    description: "Thông tin về công ty và lịch sử phát triển",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/08/luat-hung-bach-tuyen-dung.jpg",
-  },
-  {
-    href: "/gioi-thieu/dich-vu",
-    title: "Dịch vụ luật sư",
-    description: "Cung cấp các dịch vụ luật sư chuyên nghiệp",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/08/luat-hung-bach-tuyen-dung.jpg",
-  },
-  {
-    href: "/gioi-thieu/chinh-sach-bao-mat",
-    title: "Chính sách dịch vụ và bảo mật",
-    description: "Thông tin về các chính sách bảo mật của chúng tôi",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/08/luat-hung-bach-tuyen-dung.jpg",
-  },
-  {
-    href: "/gioi-thieu/list-luat-su",
-    title: "Danh sách luật sư",
-    description: "Danh sách các luật sư uy tín và kinh nghiệm",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/08/luat-hung-bach-tuyen-dung.jpg",
-  },
-  {
-    href: "/dich-vu/luat-su-tu-van",
-    title: "Luật sư tư vấn",
-    description: "Dịch vụ tư vấn pháp luật chuyên nghiệp.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
-  },
-  {
-    href: "/dich-vu/luat-su-dai-dien",
-    title: "Luật sư đại diện",
-    description: "Đại diện bảo vệ quyền lợi cho khách hàng.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
-  },
-  {
-    href: "/dich-vu/luat-su-tranh-tung",
-    title: "Luật sư tranh tụng",
-    description: "Tranh tụng tại tòa án, bảo vệ quyền lợi hợp pháp.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
-  },
-  {
-    href: "/dich-vu/dich-vu-khac",
-    title: "Dịch vụ pháp lý khác",
-    description: "Cung cấp các dịch vụ pháp lý khác.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/03/Tranh-chap-con-chung.jpg",
-  },
-  {
-    href: "/linh-vuc/luat-hinh-su",
-    title: "Sự kiện mới",
-    description: "Cập nhật các sự kiện pháp lý nổi bật.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/04/Dich-vu-ly-hon-3.jpg",
-  },
-  {
-    href: "/linh-vuc/luat-dan-su",
-    title: "Hoạt động công ty",
-    description: "Các hoạt động nội bộ nổi bật của công ty.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2023/04/Dich-vu-ly-hon-3.jpg",
-  },
-  {
-    href: "/tin-tuc/luat-hinh-su",
-    title: "THỦ TỤC KHÁNG CÁO BẢN ÁN SƠ THẨM",
-    description:
-      "Bạn không đồng ý với phán quyết của Tòa án sơ thẩm? Hãy tìm hiểu về thủ tục kháng cáo.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2022/11/Lap-vi-bang-ghi-nhan-hoat-dong-kinh-doanh.jpg",
-  },
-  {
-    href: "/tin-tuc/luat-dan-su",
-    title: "LUẬT SƯ ĐẠI DIỆN CHO KHÁCH HÀNG",
-    description:
-      "Luật sư đại diện bảo vệ quyền lợi cho khách hàng trong các vụ kiện.",
-    image:
-      "https://luathungbach.vn/wp-content/uploads/2022/11/Lap-vi-bang-ghi-nhan-hoat-dong-kinh-doanh.jpg",
-  },
-];
+// Hàm để trích xuất các thẻ in đậm từ HTML
+const extractBoldHeadings = (htmlContent: string) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, "text/html");
+
+  // Tìm tất cả các thẻ <strong> và <b>
+  const boldTags = doc.querySelectorAll("strong, b");
+  const headings: { id: string; text: string }[] = [];
+
+  boldTags.forEach((tag, index) => {
+    const id = `heading-${index}`;
+    tag.setAttribute("id", id); // Gán ID duy nhất cho mỗi thẻ in đậm
+    headings.push({ id, text: tag.textContent || "" });
+  });
+
+  return { headings, updatedHTML: doc.body.innerHTML };
+};
 
 // Component SubcategoryPage để hiển thị chi tiết bài viết
 const SubcategoryPage = () => {
   const params = useParams() as Record<string, string | string[]>;
-  const category = params?.category as string;
-  const subcategory = params?.subcategory as string;
+  const slug = params?.subcategory as string; // Lấy slug từ URL
 
-  const [currentPost, setCurrentPost] = useState<PostItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: article, isLoading, isError } = useArticleDetails(slug);
   const [imageLoading, setImageLoading] = useState(true); // Trạng thái cho việc tải ảnh
+  const [tableOfContents, setTableOfContents] = useState<
+    { id: string; text: string }[]
+  >([]);
+  const [htmlContent, setHtmlContent] = useState("");
 
-  // Tìm post dựa trên URL động
   useEffect(() => {
-    const fullHref = `/${category}/${subcategory}`;
-    const foundPost = posts.find((post) => post.href === fullHref);
-    setCurrentPost(foundPost || null);
-    setIsLoading(false);
-  }, [category, subcategory]);
+    if (article?.contentHTML) {
+      const { headings, updatedHTML } = extractBoldHeadings(
+        article.contentHTML
+      );
+      setTableOfContents(headings); // Lưu các tiêu đề in đậm vào state
+      setHtmlContent(updatedHTML); // Cập nhật HTML với các ID mới
+    }
+  }, [article?.contentHTML]);
 
   if (isLoading) {
     return (
@@ -131,13 +57,10 @@ const SubcategoryPage = () => {
       </div>
     );
   }
-
-  if (!currentPost) {
+  if (isError || !article) {
     return (
-      <div className="max-w-[1220px] flex justify-center items-center h-44 mx-auto ">
-        <p className="text-xl font-bold text-red-500">
-          Bài viết không tồn tại!
-        </p>
+      <div className="max-w-[1220px] mx-auto text-[red] h-[200px] flex items-center justify-center">
+        Bài viết không tồn tại!
       </div>
     );
   }
@@ -150,10 +73,11 @@ const SubcategoryPage = () => {
           <div className="w-1/4 px-4 Sidebar">
             <Sidebar />
           </div>
-          <div className=" max-[900px]:w-full  w-3/4 px-4">
+          <div className="max-[900px]:w-full w-3/4 px-4">
             <h1 className="text-3xl text-[#930] font-bold mb-6">
-              {currentPost.title}
+              {article.title}
             </h1>
+            <p className="mb-4">{article.description}</p>
 
             {/* Hiển thị Spin loader khi ảnh đang tải */}
             {imageLoading && (
@@ -161,25 +85,47 @@ const SubcategoryPage = () => {
                 <Spin size="large" />
               </div>
             )}
+            {/* Mục lục */}
+            <div className="toc mb-8 p-4  border-gray-200 bg-gray-50 rounded-md">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Mục Lục
+              </h2>
+              <ul className="list-decimal list-inside space-y-2">
+                {tableOfContents.map((heading, index) => (
+                  <li
+                    key={heading.id}
+                    className="text-lg text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <a href={`#${heading.id}`}>{`${index + 1}. ${
+                      heading.text
+                    }`}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {/* Hiển thị ảnh sau khi đã tải xong */}
             <div
-              className="relative w-full h-80 mb-6"
+              className="relative w-full h-[500px] mb-6"
               style={{ display: imageLoading ? "none" : "block" }}
             >
               <Image
-                src={currentPost.image}
-                alt={currentPost.title}
+                src={article.image}
+                alt={article.title}
                 fill
                 priority
                 className="object-cover"
                 onLoadingComplete={() => setImageLoading(false)} // Ẩn loader khi ảnh tải xong
               />
             </div>
-            <p className="mb-8">{currentPost.description}</p>
+
+            <div
+              className="content-html leading-7 pb-5"
+              dangerouslySetInnerHTML={{ __html: htmlContent }} // Hiển thị nội dung đã cập nhật
+            />
 
             {/* Thêm phần đánh giá bình luận */}
-            <CommentSection />
+            {article.id && <CommentSection articleId={article.id} />}
           </div>
         </div>
       </div>

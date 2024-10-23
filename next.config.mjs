@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['luathungbach.vn'],
+        domains: ['luathungbach.vn', 'suakhoathaibinh24h.vn', 'luatsukinhdo.com', 'luatsukinhdo.xyz'],
         remotePatterns: [
             {
                 protocol: 'https',

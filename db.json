@@ -1,0 +1,124 @@
+{
+ "allcodes":[],
+ "articles":[],
+ "banners":[],
+ "categories":[
+  {
+    "id": 1,
+    "slug": "/",
+    "name": "Trang chủ"
+  },
+  {
+    "id": 2,
+    "slug": "/gioi-thieu",
+    "name": "Giới thiệu"
+  },
+  {
+    "id": 3,
+    "slug": "/dich-vu",
+    "name": "Dịch vụ"
+  },
+  {
+    "id": 4,
+    "slug": "/linh-vuc",
+    "name": "Lĩnh vực"
+  },
+  {
+    "id": 5,
+    "slug": "/tin-tuc",
+    "name": "Tin tức"
+  },
+  {
+    "id": 6,
+    "slug": "/van-ban-phap-luat",
+    "name": "Văn bản pháp luật"
+  },
+  {
+    "id": 7,
+    "slug": "/lien-he",
+    "name": "Liên hệ"
+  }
+  ]
+  ,
+ "comments":[],
+ "companies":[],
+ "companyaddresses":[],
+ "employees":[],
+ "pages":[
+ ],
+ "subcategories":[
+  {
+    "id": 2,
+    "slug": "/gioi-thieu/gioi-thieu-chung",
+    "name": "Giới thiệu chung",
+    "categoryId": 2
+  },
+  {
+    "id": 2,
+    "slug": "/gioi-thieu/dich-vu",
+    "name": "Dịch vụ luật sư",
+    "categoryId": 2
+  },
+  {
+    "id": 2,
+    "slug": "/gioi-thieu/chinh-sach-bao-mat",
+    "name": "Chính sách dịch vụ và bảo mật",
+    "categoryId": 2
+  },
+  {
+    "id": 2,
+    "slug": "/gioi-thieu/list-luat-su",
+    "name": "Danh sách luật sư",
+    "categoryId": 2
+  },
+  {
+    "id": 3,
+    "slug": "/dich-vu/tu-van",
+    "name": "Tư vấn",
+    "categoryId": 3
+  },
+  {
+    "id": 4,
+    "slug": "/dich-vu/da-tin",
+    "name": "Đáo hạn",
+    "categoryId": 3
+  },
+  {
+    "id": 5,
+    "slug": "/linh-vuc/kham-pha",
+    "name": "Khám phá",
+    "categoryId": 4
+  },
+  {
+    "id": 6,
+    "slug": "/linh-vuc/tim-kiem",
+    "name": "Tìm kiếm",
+    "categoryId": 4
+  },
+  {
+    "id": 7,
+    "slug": "/tin-tuc/hoat-dong",
+    "name": "Hoạt động",
+    "categoryId": 5
+  },
+  {
+    "id": 8,
+    "slug": "/tin-tuc/khuyen-mai",
+    "name": "Khuyến mại",
+    "categoryId": 5
+  },
+  {
+    "id": 9,
+    "slug": "/van-ban-phap-luat/luat",
+    "name": "Luật",
+    "categoryId": 6
+  },
+  {
+    "id": 10,
+    "slug": "/van-ban-phap-luat/nghi-dinh",
+    "name": "Nghị định",
+    "categoryId": 6
+  }
+ ],
+ "users":[]
+}

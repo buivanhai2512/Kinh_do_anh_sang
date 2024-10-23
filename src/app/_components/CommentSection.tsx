@@ -1,268 +1,285 @@
-"use client";
-
-import { useState } from "react";
-import { message, Rate, Form, Input, Button, Checkbox } from "antd"; // Import các thành phần từ antd
-import dayjs from "dayjs"; // Import thư viện dayjs để định dạng ngày tháng
+import { useState, useEffect } from "react";
+import { message, Form, Input, Button, Spin } from "antd";
 import Image from "next/image";
+import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  checkLoginStatus,
+  getLoginData,
+  saveLoginData,
+} from "../_Services/authUtils";
+import { loginUser, registerUser } from "../_Services/apiService";
+import { CommentFormValues, Comment } from "../_Types/Type"; // Import các kiểu dữ liệu từ file types.ts
 
-// Định nghĩa kiểu dữ liệu cho bình luận lồng nhau
-interface Comment {
-  name: string;
-  email: string;
+interface CommentSectionProps {
+  articleId: number;
+}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+// API để lấy tất cả các bình luận cho một bài viết
+const fetchComments = async ({ queryKey }: { queryKey: [string, number] }) => {
+  const [_key, articleId] = queryKey;
+  const response = await axios.get(
+    `${API_BASE_URL}/comment/get-all-comment?id=${articleId}`
+  );
+  console.log(_key)
+  return response.data.data;
+};
+interface comment {
+  articleId: string;
+  statusId: string;
+  userId: string | number;
+  firstName: string;
+  lastName: string;
   phone: string;
-  text: string;
-  rating: number;
-  date: string;
-  replies: Comment[];
+  email: string;
+  replyId: number | null;
+  token: string | null;
+  content?: string;
 }
 
-const CommentSection = () => {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [replyIndex, setReplyIndex] = useState<number[] | null>(null);
-  const [form] = Form.useForm(); // Form instance để reset form
+// Hàm gửi bình luận hoặc trả lời bình luận
+const submitCommentAPI = async (commentData: comment) => {
+  const { token, replyId } = commentData;
+  const url = replyId
+    ? `${API_BASE_URL}/comment/reply-comment`
+    : `${API_BASE_URL}/comment/create-new-comment`;
 
-  // Hàm đệ quy để thêm phản hồi vào đúng vị trí
-  const addReply = (comments: Comment[], indexes: number[], reply: Comment): Comment[] => {
-    if (indexes.length === 1) {
-      const newComments = [...comments];
-      newComments[indexes[0]].replies.push(reply);
-      return newComments;
-    }
-    const newComments = [...comments];
-    newComments[indexes[0]].replies = addReply(newComments[indexes[0]].replies, indexes.slice(1), reply);
-    return newComments;
-  };
+  const response = await axios.post(url, commentData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
-  // Hàm gửi bình luận mới
-  const handleCommentSubmit = (values: Comment) => {
-    const currentDate = dayjs().format("DD/MM/YYYY HH:mm:ss"); // Lấy thời gian hiện tại
-    setComments([...comments, { ...values, date: currentDate, replies: [] }]);
-    message.success("Bình luận đã được gửi!");
-    form.resetFields(); // Reset form sau khi gửi bình luận thành công
-  };
+  return response.data;
+};
 
-  // Hàm gửi phản hồi
-  const handleReplySubmit = (indexes: number[], replyValues: Comment) => {
-    const currentDate = dayjs().format("DD/MM/YYYY HH:mm:ss"); // Lấy thời gian hiện tại cho phản hồi
-    const newReply: Comment = {
-      ...replyValues,
-      date: currentDate,
-      replies: [],
+const CommentSection = ({ articleId }: CommentSectionProps) => {
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Kiểm tra trạng thái đăng nhập
+
+  // Kiểm tra trạng thái đăng nhập khi component được render
+  useEffect(() => {
+    setIsLoggedIn(checkLoginStatus());
+  }, []);
+
+  // Lấy danh sách bình luận từ API bằng React Query
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey: ["comments", articleId],
+    queryFn: fetchComments,
+  });
+
+  // Mutation để gửi bình luận hoặc trả lời bình luận
+  const { mutate: submitCommentMutate } = useMutation({
+    mutationFn: submitCommentAPI,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", articleId] }); // Cập nhật lại danh sách bình luận sau khi gửi
+        message.success("Gửi bình luận thành công !");
+      form.resetFields();
+      setReplyingTo(null);
+    },
+    onError: (error) => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      message.error("Đã xảy ra lỗi khi gửi bình luận.");
+      console.error("Error submitting comment:", error);
+    },
+  });
+
+  // Hàm xử lý đăng ký hoặc đăng nhập người dùng và tự động bình luận
+  const handleLoginOrRegisterAndComment = async (values: CommentFormValues) => {
+    const userValues = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      phone: values.phone, // Lấy số điện thoại từ form
     };
-    setComments(addReply(comments, indexes, newReply)); // Sử dụng hàm đệ quy để thêm phản hồi vào đúng vị trí
-    setReplyIndex(null);
-    message.success("Đã trả lời bình luận!");
+
+    try {
+      const registerData = await registerUser(userValues);
+      if (registerData) {
+        const loginData = await loginUser(userValues);
+        if (loginData) {
+          saveLoginData(loginData.accessToken, loginData.user.id);
+          setIsLoggedIn(true); // Đánh dấu là đã đăng nhập
+          // Sau khi đăng nhập, tự động gửi bình luận
+          const commentData = {
+            ...values,
+            articleId: articleId.toString(),
+            replyId: replyingTo,
+            statusId: "1",
+            userId: Number(loginData.user.id),
+            token: loginData.accessToken,
+          };
+          submitCommentMutate(commentData); // Gửi bình luận sau khi đăng nhập thành công
+        }
+      }
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi đăng ký hoặc đăng nhập.");
+      console.error("Error during registration or login:", error);
+    }
   };
 
-  // Hàm đệ quy để hiển thị bình luận và phản hồi
-  const renderComments = (comments: Comment[], indexes: number[] = [], level = 0) => {
-    return comments.map((comment, index) => {
-      const currentIndexes = [...indexes, index];
-      return (
-        <div
-        key={index}
-        className={`p-4 ${level === 0 && comments.length > 0 ? 'border-b border-gray-300' : ''}`}
-        style={{ marginLeft: `${level * 10}px` }} // Đẩy lùi bình luận lồng nhau thêm 20px
+  // Hàm xử lý gửi bình luận mới hoặc bình luận trả lời
+  const handleCommentSubmit = async (values: CommentFormValues) => {
+    if (!isLoggedIn) {
+      handleLoginOrRegisterAndComment(values); // Yêu cầu đăng nhập hoặc đăng ký nếu chưa đăng nhập
+      return;
+    }
+
+    try {
+      const { token, userId } = getLoginData();
+      const commentData = {
+        ...values,
+        articleId: articleId.toString(),
+        replyId: replyingTo,
+        statusId: "1",
+        userId: Number(userId),
+        token,
+      };
+      submitCommentMutate(commentData);
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi gửi bình luận vui lòng nhập lại thông tin .");
+      console.error("Error:", error);
+    }
+  };
+
+  // Hàm để hiển thị danh sách bình luận
+  const renderComments = (comments: Comment[]) => {
+    return comments.map((comment) => (
+      <div
+        key={comment.id}
+        className={`md:p-8 py-8 ${
+          !comment.replyId ? "border-b border-dashed border-gray-300" : "p-0"
+        }`} // Bình luận to nhất (không có replyId) được thêm border
       >
-        {/* Hiển thị bình luận */}
         <div className="flex items-start justify-between space-x-4">
           <div className="flex space-x-4">
             <div className="flex-shrink-0">
               <Image
-                src="https://secure.gravatar.com/avatar/2896da225f3f59a9d8c8b8ac324cb5e3?s=70&d=mm&r=g"
+                src={
+                  comment.user?.image ||
+                  "https://secure.gravatar.com/avatar/cffdfe56752da6cdefb9db487c34f5ce?s=70&d=mm&r=g"
+                }
                 alt="Avatar"
                 width={56}
                 height={56}
                 className="rounded-full"
               />
             </div>
-
-            <div className="flex-grow">
-              <p className="font-semibold">{comment.name}</p>
-              <Rate disabled defaultValue={comment.rating} className="mt-2 text-[14px]" />
-              <p className="text-sm mb-[.9375rem] text-gray-500 mt-[.25rem]">{comment.date}</p>
-              <p className="mb-4">{comment.text}</p>
+            <div className="leading-6">
+              <p className="font-semibold">
+                {comment.user?.firstName} {comment.user?.lastName}
+              </p>
+              <p className="text-sm text-gray-500">
+                {new Date(comment.createdAt).toLocaleString()}
+              </p>
+              <p>{comment.content}</p>
             </div>
           </div>
-
-          {/* Nút trả lời luôn nằm ngang với bình luận */}
-          <Button
-            type="link"
-            onClick={() => setReplyIndex(currentIndexes)}
-            className="text-blue-500"
-          >
+          <Button type="link" onClick={() => setReplyingTo(comment.id)}>
             Trả lời
           </Button>
         </div>
 
-        {/* Hiển thị các phản hồi */}
-        <div>{renderComments(comment.replies, currentIndexes, level + 1)}</div>
+        {comment.childComment && comment.childComment.length > 0 && (
+          <div className="pl-8 pt-4">
+            {renderComments(comment.childComment)}
+          </div>
+        )}
 
-        {/* Form trả lời bình luận */}
-        {replyIndex?.toString() === currentIndexes.toString() && (
-          <Form
-            onFinish={(values) => handleReplySubmit(currentIndexes, values)}
-            className="mt-4"
-          >
-            <p className="text-sm font-semibold mb-2">Phản hồi đến {comment.name}</p>
-            <div className="flex flex-col sm:flex-row sm:space-x-4">
-              <Form.Item
-                name="name"
-                className="flex-1"
-                rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-              >
-                <Input
-                  placeholder="Tên *"
-                  className="border border-gray-300 p-2 rounded"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                className="flex-1"
-                rules={[
-                  { required: true, message: "Vui lòng nhập email!" },
-                  { type: "email", message: "Email không hợp lệ!" },
-                ]}
-              >
-                <Input
-                  placeholder="Email *"
-                  className="border border-gray-300 p-2 rounded"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="phone"
-                className="flex-1"
-                rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
-              >
-                <Input
-                  placeholder="Số điện thoại *"
-                  className="border border-gray-300 p-2 rounded"
-                />
-              </Form.Item>
-            </div>
-
+        {/* Form để trả lời bình luận */}
+        {replyingTo === comment.id && (
+          <Form form={form} onFinish={handleCommentSubmit} className="mt-4">
             <Form.Item
-              name="text"
-              rules={[{ required: true, message: "Vui lòng nhập phản hồi!" }]}
+              name="content"
+              rules={[{ required: true, message: "Vui lòng nhập bình luận!" }]}
             >
-              <Input.TextArea
-                rows={2}
-                placeholder="Phản hồi của bạn *"
-                className="border border-gray-300 p-2 rounded"
-              />
+              <Input.TextArea rows={3} placeholder="Trả lời bình luận..." />
             </Form.Item>
-            <Form.Item
-          name="rating"
-          label="Đánh giá"
-          rules={[{ required: true, message: "Vui lòng chọn số sao!" }]}
-        >
-          <Rate />
-        </Form.Item>
-
-            <div className="flex space-x-4">
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4  rounded"
-                id="submit"
-              >
-                Gửi phản hồi
-              </Button>
-              <Button
-                onClick={() => setReplyIndex(null)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded"
-              >
-                Hủy
-              </Button>
-            </div>
+            <Button type="primary" id="submit" htmlType="submit">
+              Gửi trả lời
+            </Button>
+            <Button type="link" className="mx-4" onClick={() => setReplyingTo(null)}>
+              Hủy
+            </Button>
           </Form>
         )}
       </div>
-    );
-  });
-};
+    ));
+  };
 
   return (
-    <>
-    <div className="mb-10 bg-[#f2f2f2] p-5">
-      <h2 className="text-xl font-semibold mb-4">Đánh giá bài viết</h2>
-      <p className="text-sm mb-4">
-        Email của bạn sẽ không được hiển thị công khai. Các trường bắt buộc
-        được đánh dấu *
-      </p>
+    <div>
+      {isLoading ? (
+        <Spin />
+      ) : comments.length > 0 ? (
+        renderComments(comments)
+      ) : (
+        <div className="py-6 text-[red]">Chưa có bình luận nào cho bài viết này.</div>
+      )}
 
-      <Form form={form} onFinish={handleCommentSubmit} className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:space-x-4">
-          <Form.Item
-            name="name"
-            className="flex-1"
-            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+      <div className="mb-10 mt-8 bg-[#f2f2f2] p-5">
+        <h2 className="text-xl font-semibold mb-4">Đánh giá bài viết</h2>
+        {/* Form gửi bình luận mới */}
+        {replyingTo === null && (
+          <Form
+            form={form}
+            onFinish={handleCommentSubmit}
+            className="space-y-6"
           >
-            <Input placeholder="Tên *" className="border border-gray-300 p-2 rounded" />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            className="flex-1"
-            rules={[
-              { required: true, message: "Vui lòng nhập email!" },
-              { type: "email", message: "Email không hợp lệ!" },
-            ]}
-          >
-            <Input placeholder="Email *" className="border border-gray-300 p-2 rounded" />
-          </Form.Item>
-
-          <Form.Item
-            name="phone"
-            className="flex-1"
-            rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
-          >
-            <Input
-              placeholder="Số điện thoại *"
-              className="border border-gray-300 p-2 rounded"
-            />
-          </Form.Item>
-        </div>
-
-        <Form.Item
-          name="text"
-          rules={[{ required: true, message: "Vui lòng nhập bình luận!" }]}
-        >
-          <Input.TextArea
-            rows={4}
-            placeholder="Bình luận của bạn *"
-            className="border border-gray-300 p-2 rounded w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="rating"
-          label="Đánh giá"
-          rules={[{ required: true, message: "Vui lòng chọn số sao!" }]}
-        >
-          <Rate />
-        </Form.Item>
-
-        <Form.Item name="remember" valuePropName="checked">
-          <Checkbox>
-            Lưu tên của tôi, email, và trang web trong trình duyệt này cho lần
-            bình luận kế tiếp của tôi.
-          </Checkbox>
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit" id="submit">
-            Gửi bình luận
-          </Button>
-        </Form.Item>
-      </Form>
-
-      {/* Hiển thị bình luận và phản hồi lồng nhau */}
+            {/* Hiển thị trường thông tin người dùng nếu chưa đăng nhập */}
+            {!isLoggedIn && (
+              <div className="flex flex-wrap gap-4 md:flex-nowrap">
+                <Form.Item
+                  name="firstName"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
+                >
+                  <Input placeholder="Họ *" />
+                </Form.Item>
+                <Form.Item
+                  name="lastName"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+                >
+                  <Input placeholder="Tên *" />
+                </Form.Item>
+                <Form.Item
+                  name="phone"
+                  className="flex-grow"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập số điện thoại!" },
+                    {
+                      pattern: /^\d{10,11}$/,
+                      message: "Số điện thoại phải là 10 hoặc 11 chữ số!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Số điện thoại *" />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+                >
+                  <Input placeholder="Email *" />
+                </Form.Item>
+              </div>
+            )}
+            <Form.Item
+              name="content"
+              rules={[{ required: true, message: "Vui lòng nhập bình luận!" }]}
+            >
+              <Input.TextArea rows={4} placeholder="Bình luận của bạn *" />
+            </Form.Item>
+            <Button type="primary" id="submit" htmlType="submit">
+              Gửi bình luận
+            </Button>
+          </Form>
+        )}
+      </div>
     </div>
-      {renderComments(comments)}
-      </>
   );
 };
 

@@ -111,7 +111,10 @@
 #contact-vr .phone-vr-img-circle {
   background-color: #2196F3
 }
-
+.map{
+  box-shadow: 0 0 0 0 #1fd744;
+  background-color: rgb(35 217 72 / 70%)
+}
 div#whatsapp-vr .phone-vr .phone-vr-circle-fill {
   box-shadow: 0 0 0 0 #1fd744;
   background-color: rgb(35 217 72 / 70%)
@@ -192,6 +195,31 @@ div#whatsapp-vr .phone-vr .phone-vr-img-circle img {
 }
 
 /* ẩn thanh scoll */
+.navMenu::-webkit-scrollbar {
+  display: none;
+}
+.content-html strong,
+.content-html b {
+  color: #930; /* Màu chữ bạn muốn */
+  font-size: 25.6px;
+  margin-bottom: 10px; /* Khoảng cách dưới */
+  display: block; 
+  font-weight: 700; /* Đảm bảo phần chữ được in đậm */
+}
+.content-html p {
+  line-height: 25px;
+  margin: 10px 0px; /* Tạo khoảng cách giữa các đoạn văn */
+}
+.content-html ol, 
+.content-html ul {
+  list-style-type: disc; 
+  margin-left: 20px;   
+  padding-bottom: 10px;  
+}
+
+.content-html ol {
+  list-style-type: decimal; /* Đặt kiểu số cho danh sách có thứ tự */
+}
 @media (max-width: 900px) {
   .menu-mobile::-webkit-scrollbar {
     display: none;

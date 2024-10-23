@@ -1,37 +1,50 @@
 "use client";
 
 import Link from "next/link";
-
-// Định nghĩa kiểu dữ liệu cho DropdownItem
+import { Spin } from "antd";
+import React from "react";
+import { useArticleByIds } from "../_hook/useApi";
 interface DropdownItem {
-  href: string;
-  label: string;
+  title: string;
+  slug: string;
 }
-
-// Dữ liệu của Sidebar sẽ được định nghĩa trực tiếp trong file này
-const sidebarItems: DropdownItem[] = [
-  { href: "/dich-vu/luat-su-tu-van", label: "Luật sư tư vấn" },
-  { href: "/dich-vu/luat-su-dai-dien", label: "Luật sư đại diện" },
-  { href: "/dich-vu/luat-su-tranh-tung", label: "Luật sư tranh tụng" },
-  { href: "/dich-vu/dich-vu-khac", label: "Dịch vụ khác" },
-];
-
-// Component Sidebar để hiển thị danh sách liên kết
+// Component Sidebar để hiển thị danh sách bài viết
 const Sidebar = () => {
-  if (sidebarItems.length === 0) {
-    return null; // Nếu không có mục nào, không hiển thị Sidebar
+  // Sử dụng hook để gọi API và lấy dữ liệu
+  const { data: articleItems = [], isLoading, isError } = useArticleByIds();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <Spin />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <div className="text-[red]">Đã xảy ra lỗi khi tải dữ liệu</div>;
+  }
+
+  if (!articleItems.chillrend || articleItems.chillrend.length === 0) {
+    return null; // Nếu không có bài viết nào, không hiển thị Sidebar
   }
 
   return (
-    <div className="p-4 rounded-lg Sidebar">
+    <div
+      className="p-4 rounded-lg navMenu"
+      style={{
+        maxHeight: "210px", // Giới hạn chiều cao của sidebar
+        overflowY: "auto",  // Thêm scroll nếu có nhiều mục
+      }}
+    >
       <ul className="space-y-2">
-        {sidebarItems.map((item, idx) => (
+        {articleItems.chillrend.map((item: DropdownItem, idx: number) => (
           <li key={idx}>
             <Link
-              href={item.href}
+              href={`/dich-vu/${item.slug}`} // Sử dụng slug cho đường dẫn
               className="block p-3 bg-black text-white hover:bg-gray-800 transition-colors rounded-md"
             >
-              {item.label}
+              {item.title} {/* Hiển thị title của bài viết */}
             </Link>
           </li>
         ))}

@@ -2,33 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DoubleRightOutlined } from "@ant-design/icons"; // Đảm bảo nhập đúng icon
+import { DoubleRightOutlined } from "@ant-design/icons";
+import { useAllCategoriesClient } from "../_hook/useApi"; // Import hook để gọi API
+import { Spin } from "antd";
 
-// Định nghĩa kiểu dữ liệu cho các mục menu
+// Định nghĩa kiểu dữ liệu cho các mục menu từ API
 interface MenuItem {
-  href: string;
-  label: string;
-  dropdownItems?: MenuItem[]; // dropdownItems là một mảng các MenuItem (nếu có)
+  id: number;
+  name: string;
+  slug: string;
 }
-
-// Mảng các mục menu với kiểu đã định nghĩa, chỉ mục cha
-const menuItems: MenuItem[] = [
-  { href: "/", label: "Trang chủ" },
-  { href: "/gioi-thieu", label: "Giới thiệu" }, // Chỉ hiển thị cha
-  { href: "/dich-vu", label: "Dịch vụ" }, // Chỉ hiển thị cha
-  { href: "/tin-tuc", label: "Tin tức" }, // Chỉ hiển thị cha
-  { href: "/lien-he", label: "Liên hệ" },
-];
-
-// Hàm tìm kiếm item theo URL
-const findMenuItem = (url: string, items: MenuItem[]): MenuItem | null => {
-  for (const item of items) {
-    if (item.href === url) {
-      return item;
-    }
-  }
-  return null;
-};
 
 // Định nghĩa kiểu dữ liệu cho breadcrumb
 interface Breadcrumb {
@@ -40,6 +23,14 @@ const Breadcrumbs = () => {
   const pathname = usePathname() || "";
   const pathArray = pathname.split("/").filter(Boolean);
 
+  // Sử dụng hook useAllCategoriesClient để lấy dữ liệu từ API
+  const { data: menuItems = [], isLoading, isError } = useAllCategoriesClient();
+
+  // Hàm tìm kiếm item theo URL
+  const findMenuItem = (url: string, items: MenuItem[]): MenuItem | null => {
+    return items.find((item) => `/${item.slug}` === url) || null;
+  };
+
   // Khởi tạo breadcrumbs với Trang chủ
   const breadcrumbs: Breadcrumb[] = [{ href: "/", label: "Trang chủ" }];
 
@@ -49,10 +40,18 @@ const Breadcrumbs = () => {
     currentPath += `/${segment}`;
     const menuItem = findMenuItem(currentPath, menuItems);
 
-    if (menuItem && !breadcrumbs.some((crumb) => crumb.href === menuItem.href)) {
-      breadcrumbs.push({ href: menuItem.href, label: menuItem.label });
+    if (menuItem && !breadcrumbs.some((crumb) => crumb.href === currentPath)) {
+      breadcrumbs.push({ href: currentPath, label: menuItem.name });
     }
   });
+
+  if (isLoading) {
+    return <div> <Spin/></div>;
+  }
+
+  if (isError) {
+    return <div className="text-[red]">Đã xảy ra lỗi khi tải dữ liệu!</div>;
+  }
 
   return (
     <div className="h-[100px] bg-[#2c2a2a] text-white">
@@ -64,7 +63,7 @@ const Breadcrumbs = () => {
             </Link>
             {index < breadcrumbs.length - 1 && (
               <span className="mx-2">
-                <DoubleRightOutlined /> {/* Sử dụng icon từ Ant Design */}
+                <DoubleRightOutlined />
               </span>
             )}
           </li>

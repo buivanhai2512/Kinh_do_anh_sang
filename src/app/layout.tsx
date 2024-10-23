@@ -1,17 +1,10 @@
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import "antd/dist/reset.css";
 import "./globals.css";
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 import ContactButtons from "./_components/ContactButtons";
-
-export const metadata: Metadata = {
-  title: "Kinh Đô Ánh Sáng",
-  description: "dùng cho seo",
-  icons: {
-    icon: "/logo.png",
-  },
-};
+import Providers from "./util/Providers";
 
 export default function RootLayout({
   children,
@@ -30,15 +23,22 @@ export default function RootLayout({
           crossOrigin=""
         />
         <meta property="og:title" content="Kinh Đô Ánh Sáng" />
-        <meta property="og:description" content="dùng cho seo" />
+        <meta property="og:description" content="Văn phòng luật sư Kinh
+         Đô Ánh Sáng được thành lập năm 2024, là tổ chức hành nghề
+          luật sư được thành lập bởi những Luật sư có kinh nhiệm trong các 
+          lĩnh vực Hình sự, Dân sự, Đất đai, Doanh nghiệp, Hôn nhân và gia đình,… 
+          cùng với cơ cấu tổ chức ổn định, đội ngũ Luật sư, Chuyên viên pháp lý và 
+          cố vấn có chuyên môn giỏi và luôn tận tâm với công việc." />
         <meta property="og:image" content="/kihn đô.png" />
-        <meta property="og:url" content="http://localhost:3000" />
+        <link rel="icon" href="/logo.png" sizes="32x32" type="image/png" />
       </head>
       <body>
+        <Providers>
         <Header />
         {children}
         <ContactButtons />
         <Footer />
+        </Providers>
       </body>
     </html>
   );

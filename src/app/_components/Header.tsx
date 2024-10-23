@@ -1,103 +1,123 @@
 "use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
-import { AutoComplete, Empty, Input } from "antd";
+import { AutoComplete, Empty, Input, Spin } from "antd";
 import { SearchOutlined, MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import MenuItem from "./MenuItem";
+import {
+  useAllCategoriesClient,
+  useCompanyDetail,
+  useSearchArticles,
+} from "../_hook/useApi"; // Sử dụng hook tìm kiếm
 
-// Dữ liệu menu
-const menuItems = [
-  { href: "/", label: "Trang chủ" },
-  {
-    href: "/gioi-thieu",
-    label: "Giới thiệu",
-    dropdownItems: [
-      { href: "/gioi-thieu/gioi-thieu-chung", label: "Giới thiệu chung" },
-      { href: "/gioi-thieu/dich-vu", label: "Dịch vụ luật sư" },
-      {
-        href: "/gioi-thieu/chinh-sach-bao-mat",
-        label: "Chính sách dịch vụ và bảo mật",
-      },
-      { href: "/gioi-thieu/list-luat-su", label: "Danh sách luật sư " },
-    ],
-  },
-  {
-    href: "/dich-vu",
-    label: "Dịch vụ",
-    dropdownItems: [
-      { href: "/dich-vu/luat-su-tu-van", label: "Luật sư tư vấn" },
-      { href: "/dich-vu/luat-su-dai-dien", label: " Luật sư đại diện" },
-      { href: "/dich-vu/luat-su-tranh-tung", label: "Luật sư tranh tụng" },
-      { href: "/dich-vu/dich-vu-khac", label: "Dịch vụ khác" },
-    ],
-  },
-  
-  {
-    href: "/linh-vuc",
-    label: "Lĩnh vực",
-    dropdownItems: [
-      { href: "/linh-vuc/luat-hinh-su", label: "Luật hình sự" },
-      { href: "/linh-vuc/luat-dan-su", label: "Luật dân sự" },
-    ],
-  },
-  {
-    href: "/tin-tuc",
-    label: "Tin tức",
-    dropdownItems: [
-      { href: "/tin-tuc/luat-hinh-su", label: "Luật hình sự" },
-      { href: "/tin-tuc/luat-dan-su", label: "Luật dân sự" },
-    ],
-  },
-  {
-    href: "/lien-he",
-    label: "Liên hệ",
-  },
-];
+// Hàm chuyển buffer thành chuỗi base64
+const bufferToBase64 = (buffer: number[] | undefined): string | null => {
+  if (!buffer || !Array.isArray(buffer)) {
+    return null;
+  }
+  const binary = buffer.map((byte) => String.fromCharCode(byte)).join("");
+  return `data:image/png;base64,${btoa(binary)}`;
+};
+
+const isBase64Image = (image: string): boolean => {
+  return /^data:image\/(jpeg|png|webp);base64,/.test(image);
+};
+
+// Định nghĩa kiểu dữ liệu cho mục menu
+interface MenuItemProps {
+  id: number;
+  name: string;
+  slug: string;
+  title?: string;
+  desc?: string;
+  statusId?: number;
+  createdAt: string;
+  updatedAt: string;
+  children?: MenuItemProps[];
+}
 
 export default function Header() {
-  const [options, setOptions] = useState<{ value: string }[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState(""); // Lưu trữ từ khóa tìm kiếm
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const {
+    data: companyData,
+    isLoading: logoLoading,
+    isError: logoErr,
+    error,
+  } = useCompanyDetail(1);
+
+  // Sử dụng hook useAllCategoriesClient để lấy danh mục
+  const { data: menuItems = [], isLoading, isError } = useAllCategoriesClient();
+
+  // Sử dụng hook useSearchArticles để tìm kiếm bài viết theo từ khóa
+  const {
+    data: searchResults = { data: [], count: 0 },
+    isLoading: isSearchLoading,
+  } = useSearchArticles(searchKeyword, 10, 0);
+
   // Xử lý tìm kiếm
   const handleSearch = (value: string) => {
-    setOptions(
-      value
-        ? ["apple", "banana", "orange", "grape", "pineapple"]
-            .filter((item) => item.toLowerCase().includes(value.toLowerCase()))
-            .map((item) => ({ value: item }))
-        : []
-    );
+    setSearchKeyword(value); // Cập nhật từ khóa tìm kiếm
   };
 
-  // Xử lý khi người dùng chọn một mục từ AutoComplete
+  // Lọc và hiển thị các kết quả tìm kiếm
+  const filteredResults = searchResults.data.filter((item) =>
+    item.title.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
+  // Xử lý khi người dùng chọn một kết quả tìm kiếm
   const handleSelect = (value: string) => {
-    console.log("Bạn đã chọn:", value);
+    const selectedItem = searchResults.data.find((item) => item.title === value);
+    if (selectedItem) {
+      window.location.href = `/bai-viet/${selectedItem.slug}`; 
+    }
     setIsSearchVisible(false);
   };
+
+  // Sắp xếp các mục menu dựa trên createdAt
+  const sortedMenuItems = menuItems.sort(
+    (a: MenuItemProps, b: MenuItemProps) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateA - dateB;
+    }
+  );
 
   return (
     <header className="w-full bg-center bg-cover bg-[white] h-[90px] sticky top-0 transition-all ease-in-out duration-300 z-[1001]">
       <div className="max-w-[1220px] flex-nowrap px-4 py-2 flex h-[90px] justify-between items-center mx-auto">
         {/* Logo */}
-        <div className="mr-8 w-[392px] lg:h-[82px]">
+        <div className="relative w-[365px] aspect-[365/82]">
           <Link href="/">
-            <Image
-              className="h-auto object-contain"
-              src="/kihn đô.png"
-              priority
-              width={363}
-              height={83}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              alt="luat-su-binh"
-            />
+            {logoLoading ? (
+              <Spin />
+            ) : logoErr ? (
+              <div>Lỗi tải logo: {error?.message}</div>
+            ) : companyData?.image ? (
+              <Image
+                className="object-contain"
+                src={
+                  typeof companyData.image === "string" && isBase64Image(companyData.image)
+                    ? companyData.image
+                    : bufferToBase64(companyData.image.data) || "/default-logo.png"
+                }
+                layout="fill"
+                priority
+                alt={companyData?.companyName || "Company Logo"}
+              />
+            ) : (
+              <div className="text-[red]">Không có logo</div>
+            )}
           </Link>
         </div>
 
         {/* Menu icon cho mobile */}
-        <div className="min-[901px]:hidden flex items-center">
+        <div className="min-[1024px]:hidden flex items-center">
           {isMenuOpen ? (
             <CloseOutlined
               className="text-2xl cursor-pointer"
@@ -112,24 +132,35 @@ export default function Header() {
         </div>
 
         {/* Menu items cho desktop */}
-        <nav className="max-[900px]:hidden">
+        <nav className="max-[1024px]:hidden ">
           <ul className="flex items-center max-w-full justify-center relative overflow-visible">
-            {/* Render các mục menu cho desktop */}
-            {menuItems.map((item, index) => (
-              <MenuItem
-                key={index}
-                href={item.href}
-                label={item.label}
-                dropdownItems={item.dropdownItems}
-              />
-            ))}
+            {isLoading ? (
+              <Spin size="small" className="m-4" /> // Hiển thị Spin khi loading
+            ) : isError ? (
+              <li className="text-[red]">Không lấy được dữ liệu danh mục.</li>
+            ) : sortedMenuItems.length > 0 ? (
+              sortedMenuItems.map((item: MenuItemProps) =>
+                item.slug ? (
+                  <MenuItem
+                    key={item.id}
+                    slug={
+                      item.slug.startsWith("/") ? item.slug : `/${item.slug}`
+                    }
+                    name={item.name}
+                    dropdownItems={item.children}
+                  />
+                ) : null
+              )
+            ) : (
+              <li className="text-[red]">Không có mục nào</li>
+            )}
           </ul>
         </nav>
 
         {/* Tìm kiếm với AutoComplete */}
-        <div className="relative max-[900px]:hidden">
+        <div className="relative max-[1024px]:hidden">
           <SearchOutlined
-            className="text-xl sreach  cursor-pointer"
+            className="text-xl sreach cursor-pointer"
             onClick={() => setIsSearchVisible(true)}
           />
           {isSearchVisible && (
@@ -138,11 +169,19 @@ export default function Header() {
               onMouseLeave={() => setIsSearchVisible(false)}
             >
               <AutoComplete
-                options={options}
+                options={filteredResults.map((item) => ({
+                  value: item.title,
+                }))}
                 className="w-64 h-10 rounded-none"
                 onSearch={handleSearch}
                 onSelect={handleSelect}
-                notFoundContent={<Empty description="Không tìm thấy tin tức" />} // Hiển thị khi không tìm thấy kết quả
+                notFoundContent={
+                  isSearchLoading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <Empty description="Không tìm thấy tin tức" />
+                  )
+                }
               >
                 <Input.Search
                   id="custom-button-sreach"

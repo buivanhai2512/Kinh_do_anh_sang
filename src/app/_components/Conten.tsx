@@ -1,111 +1,97 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { Spin } from "antd";
+import { useAllCategoriesClient } from "../_hook/useApi";
 
-// Dữ liệu dịch vụ và bài viết
-const menuItems = [
-  {
-    href: "/luat-su-tu-van",
-    label: "Luật sư tư vấn",
-    posts: [
-      {
-        href: "/luat-su-tu-van/bai-viet-1",
-        title: "THỦ TỤC KHÁNG CÁO BẢN ÁN SƠ THẨM",
-        description:
-          "Bạn không đồng ý với phán quyết của Tòa án sơ thẩm? Hãy tìm hiểu về thủ tục kháng cáo.",
-        image: "/luat-su-dai-dien.jpg",
-      },
-    ],
-  },
-  {
-    href: "/luat-su-dai-dien",
-    label: "Luật sư đại diện",
-    posts: [
-      {
-        href: "/luat-su-dai-dien/bai-viet-1",
-        title: "LUẬT SƯ ĐẠI DIỆN CHO KHÁCH HÀNG",
-        description:
-          "Luật sư đại diện bảo vệ quyền lợi cho khách hàng trong các vụ kiện.",
-        image: "/luat-su-trang-chap.png",
-      },
-    ],
-  },
-  {
-    href: "/luat-su-tranh-tung",
-    label: "Luật sư tranh tụng",
-    posts: [
-      {
-        href: "/luat-su-tranh-tung/bai-viet-1",
-        title: "THỦ TỤC TRANH TỤNG HÌNH SỰ",
-        description:
-          "Tìm hiểu quy trình tranh tụng trong các vụ án hình sự và vai trò của luật sư.",
-        image: "/luat-su-tu-van.png",
-      },
-    ],
-  },
-  {
-    href: "/dich-vu-khac",
-    label: "Dịch vụ khác",
-    posts: [
-      {
-        href: "/dich-vu-khac/bai-viet-1",
-        title: "DỊCH VỤ PHÁP LÝ DOANH NGHIỆP",
-        description:
-          "Luật sư tư vấn và hỗ trợ doanh nghiệp về các vấn đề pháp lý.",
-        image: "/dich-vu-khac.png",
-      },
-    ],
-  },
-];
+// Định nghĩa kiểu dữ liệu cho bài viết
+interface PostItem {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  image: string;
+}
 
-// Component Content để hiển thị dịch vụ và bài viết
+// Định nghĩa kiểu dữ liệu cho danh mục
+interface CategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  children: PostItem[];
+}
+
 export default function Content() {
+  const { data: menuItems = [], isLoading, isError, error } = useAllCategoriesClient(); // Gọi hook lấy dữ liệu từ API
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <Spin />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center text-red-500">
+        Đã xảy ra lỗi khi tải dữ liệu: {error?.message || "Lỗi không xác định"}
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[1220px] mx-auto pb-8">
       {/* Grid chứa các mục dịch vụ và bài viết */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {menuItems.map((service, serviceIndex) => (
-          <div key={serviceIndex} className="service-column px-4">
-            {/* Tiêu đề dịch vụ */}
-            <h2 className="text-xl font-bold mb-4 text-black">
-              {service.label}
-            </h2>
-            {/* Hiển thị bài viết của dịch vụ đó */}
-            <div className="flex flex-col space-y-4">
-              {service.posts.map((post, postIndex) => (
-                <div
-                  key={postIndex}
-                  className="border-b gap-3 grid grid-cols-[28%_72%] items-center border-gray-300 pb-4"
-                >
-                  {/* Hình ảnh của bài viết */}
-                  <div className="relative w-full min-h-[100px] group overflow-hidden">
-                    <Link href={post.href} >
-                      <Image
-                        src={post.image}
-                        alt={post.title}
-                        fill // Thay thế layout="fill"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tối ưu kích thước hình ảnh
-                        style={{ objectFit: "cover" }} // Thay thế objectFit="cover"
-                        className="rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
-                        loading="lazy" // Lazy loading cho hình ảnh
-                        placeholder="blur" // Sử dụng mã hóa hình ảnh mờ
-                        blurDataURL={post.image} // URL mã hóa cho hình ảnh mờ
-                      />
-                    </Link>
-                  </div>
-                  <div className="pr-[5px]">
-                    <h3 className="text-[14px] min-[608px]:text-lg line-clamp-1 uppercase font-bold my-1">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-600 text-[70%] min-[533px]:text-[95%] min-[533px]:text-justify leading-5 line-clamp-3">
-                      {post.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+        {menuItems
+          .filter((service: CategoryItem) => service.children && service.children.length > 0) // Chỉ hiển thị danh mục có danh mục con
+          .map((service: CategoryItem, serviceIndex: number) => (
+            <div key={serviceIndex} className="service-column px-4">
+              {/* Lấy tiêu đề từ bài viết con đầu tiên nếu có */}
+              <h2 className="text-xl font-bold mb-4 text-black">
+                {service.children[0]?.title || service.name}
+              </h2>
+              {/* Hiển thị tối đa 3 bài viết của dịch vụ đó */}
+              <div className="flex flex-col space-y-4">
+                {service.children.slice(0, 3).map((post: PostItem, postIndex: number) => {
+                  return (
+                    <div
+                      key={postIndex}
+                      className="border-b gap-3 grid grid-cols-[28%_72%] items-center border-gray-300 pb-4"
+                    >
+                      {/* Hình ảnh của bài viết */}
+                      <div className="relative w-full min-h-[100px] group overflow-hidden">
+                        <Link href={`/${service.slug}/${post.slug}`} title={post.title}>
+                          <Image
+                            src={post.image}
+                            alt={post.title || "Bài viết không có tiêu đề"}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            style={{ objectFit: "cover" }}
+                            className="rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
+                            loading="lazy"
+                            placeholder="blur"
+                            blurDataURL="/default-image.jpg"
+                          />
+                        </Link>
+                      </div>
+                      <div className="pr-[10px]">
+                        <h3 className="text-[14px] min-[608px]:text-lg line-clamp-1 uppercase font-bold my-1">
+                          {post.title || "Tiêu đề mặc định"}
+                        </h3>
+                        <p className="text-gray-600 text-[70%] min-[533px]:text-[95%] min-[533px]:text-justify leading-5 line-clamp-3">
+                          {post.description || "Mô tả mặc định cho bài viết."}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
