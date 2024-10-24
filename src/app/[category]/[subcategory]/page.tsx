@@ -8,6 +8,7 @@ import Breadcrumbs from "@/app/_components/Navbar";
 import Sidebar from "@/app/_components/Sidebar";
 import { useArticleDetails } from "@/app/_hook/useApi";
 import { useState, useEffect } from "react";
+import Head from "next/head";
 
 
 // Hàm để trích xuất các thẻ in đậm từ HTML
@@ -67,6 +68,17 @@ const SubcategoryPage = () => {
 
   return (
     <>
+     <Head>
+        <title>{article.title}</title>
+        <meta property="og:title" content={article.title} />
+        <meta name="description" content={article.description} />
+        <meta property="og:description" content={article.description} />
+        <meta property="og:image" content={article.image} />
+        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${slug}`} />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={article.description} />
+        <meta name="twitter:image" content={article.image} />
+      </Head>
       <Breadcrumbs />
       <div className="max-w-[1220px] mx-auto py-8 px-8">
         <div className="flex flex-wrap -mx-4">

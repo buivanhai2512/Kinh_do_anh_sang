@@ -96,7 +96,7 @@ const CategoryPage = () => {
                         )}
 
                         <Image
-                          src={post.image}
+                          src={post.image || 'path/to/default/image.png'}
                           alt={post.title}
                           fill
                           priority

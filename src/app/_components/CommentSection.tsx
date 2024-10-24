@@ -190,7 +190,46 @@ const CommentSection = ({ articleId }: CommentSectionProps) => {
 
         {/* Form để trả lời bình luận */}
         {replyingTo === comment.id && (
+          
           <Form form={form} onFinish={handleCommentSubmit} className="mt-4">
+           {!isLoggedIn && (
+              <div className="flex flex-wrap gap-4 md:flex-nowrap">
+                <Form.Item
+                  name="firstName"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
+                >
+                  <Input placeholder="Họ *" />
+                </Form.Item>
+                <Form.Item
+                  name="lastName"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+                >
+                  <Input placeholder="Tên *" />
+                </Form.Item>
+                <Form.Item
+                  name="phone"
+                  className="flex-grow"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập số điện thoại!" },
+                    {
+                      pattern: /^\d{10,11}$/,
+                      message: "Số điện thoại phải là 10 hoặc 11 chữ số!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Số điện thoại *" />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  className="flex-grow"
+                  rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+                >
+                  <Input placeholder="Email *" />
+                </Form.Item>
+              </div>
+            )}
             <Form.Item
               name="content"
               rules={[{ required: true, message: "Vui lòng nhập bình luận!" }]}
